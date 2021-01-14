@@ -38,12 +38,12 @@ const SwipeUpDownModal = (props) => {
       onStartShouldSetPanResponderCapture: () => false,
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         if (isAnimating) {
-          return false;
+          return true;
         }
         if (gestureState.dy > 22) {
           return true;
         }
-        return false;
+        return true;
       },
       onPanResponderGrant: () => {
         pan.setOffset({
@@ -61,47 +61,15 @@ const SwipeUpDownModal = (props) => {
         // The user has released all touches while this view is the
         // responder. This typically means a gesture has succeeded
         // Flatten the offset so it resets the default positioning
-        // if (gestureState.dy > 0 && gestureState.vy > 0) {
-          // if (gestureState.vy <= -0.7 || gestureState.dy <= -100) {
             setIsAnimating(true);
             Animated.timing(pan, {
-              toValue: { x: 0, y: -height },
+              toValue: { x: 0, y: -300 },
               ...TIMING_CONFIG,
               useNativeDriver: true,
             }).start(() => {
               setIsAnimating(false);
               props.onClose();
             });
-          // } else if (gestureState.vy >= 0.5 || gestureState.dy >= 100) {
-          //   setIsAnimating(true);
-          //   Animated.timing(pan, {
-          //     toValue: { x: 0, y: height },
-          //     ...TIMING_CONFIG,
-          //     useNativeDriver: false,
-          //   }).start(() => {
-          //     setIsAnimating(false);
-          //     props.onClose();
-          //   });
-          // } else {
-          //   setIsAnimating(true);
-          //   Animated.spring(pan, {
-          //     toValue: 0,
-          //     useNativeDriver: false,
-          //   }).start(() => {
-          //     setIsAnimating(false);
-          //     // props.onClose();
-          //   });
-          // }
-        // } else {
-        //   setIsAnimating(true);
-        //   Animated.spring(pan, {
-        //     toValue: 0,
-        //     useNativeDriver: false,
-        //   }).start(() => {
-        //     setIsAnimating(false);
-        //     // props.onClose();
-        //   });
-        // }
       },
     })
   ).current;
@@ -116,7 +84,7 @@ const SwipeUpDownModal = (props) => {
       });
       pan.setValue({
         x: 0,
-        y: props.OpenModalDirection == "up" ? -height : height,
+        y: props.OpenModalDirection == "up" ? -300 : 300,
       }); // Initial value
       pan.x.addListener((value) => (animatedValueX = value.value));
       pan.y.addListener((value) => (animatedValueY = value.value));
@@ -129,7 +97,7 @@ const SwipeUpDownModal = (props) => {
       Animated.timing(pan, {
         toValue: {
           x: 0,
-          y: props.PressToanimateDirection == "up" ? -height : height,
+          y: props.PressToanimateDirection == "up" ? -300 : 300,
         },
         ...TIMING_CONFIG,
         useNativeDriver: false,
@@ -139,19 +107,6 @@ const SwipeUpDownModal = (props) => {
       });
     }
   }, [props.PressToanimate]);
-
-  let handleGetStyle = (opacity) => {
-    return [
-      [
-        styles.container,
-        {
-          transform: [{ translateX: pan.x }, { translateY: pan.y }],
-          opacity: opacity,
-        },
-        [props.HeaderStyle],
-      ],
-    ];
-  };
 
   let handleGetStyleBody = (opacity) => {
     return [
@@ -178,13 +133,12 @@ const SwipeUpDownModal = (props) => {
   };
 
   let interpolateBackgroundOpacity = pan.y.interpolate({
-    inputRange: [-height, 0, height],
-    outputRange: [props.fade ? 0 : 1, 1, props.fade ? 0 : 1],
+    inputRange: [-300, 0, 300],
+    outputRange: [0, 1, 0],
   });
 
   return (
     <Modal
-      animationType="none"
       transparent={true}
       visible={props.modalVisible}
       onShow={() => {
@@ -198,7 +152,7 @@ const SwipeUpDownModal = (props) => {
         });
       }}
     >
-      <Animated.View style={handleMainBodyStyle(interpolateBackgroundOpacity)}>
+      <Animated.View style={[handleMainBodyStyle(interpolateBackgroundOpacity),{maxHeight:200}]}>
         <Animated.View
           style={handleGetStyleBody(interpolateBackgroundOpacity)}
           {...panResponder.panHandlers}
@@ -207,24 +161,7 @@ const SwipeUpDownModal = (props) => {
             onPress={() => Keyboard.dismiss()}
             style={styles.TouchWithoutFeedBack}
           >
-            <ImageBackground
-              source={props.ImageBackgroundModal && props.ImageBackgroundModal}
-              style={styles.ImageBackground}
-              imageStyle={
-                props.ImageBackgroundModalStyle &&
-                props.ImageBackgroundModalStyle
-              }
-            >
               {props.ContentModal}
-            </ImageBackground>
-          </TouchableWithoutFeedback>
-        </Animated.View>
-        <Animated.View
-          style={handleGetStyle(interpolateBackgroundOpacity)}
-          {...panResponder.panHandlers}
-        >
-          <TouchableWithoutFeedback>
-            {props.HeaderContent ? props.HeaderContent : <View />}
           </TouchableWithoutFeedback>
         </Animated.View>
       </Animated.View>
@@ -234,7 +171,7 @@ const SwipeUpDownModal = (props) => {
 
 const styles = StyleSheet.create({
   background: {
-    opacity: 0,
+    opacity: 1,
     flex: 1,
     marginTop: 55,
   },
@@ -248,7 +185,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  TouchWithoutFeedBack: { flex: 1 },
+  TouchWithoutFeedBack: { flex: 1, },
 });
 
 export default SwipeUpDownModal;
